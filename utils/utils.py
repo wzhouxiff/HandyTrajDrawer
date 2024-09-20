@@ -3,47 +3,6 @@ import copy
 import numpy as np
 
 
-def create_relative(RT_list, K_1=4.7, dataset="syn"):
-    if dataset=="realestate":
-       scale_T = 1
-       RT_list = [RT.reshape(3,4) for RT in RT_list]
-    elif dataset=="syn":   
-        scale_T = (470/K_1)/7.5   ## 读取intrinsic 内参左上角的值 第一行第一列
-        '''
-        4.694746736956946052e+02 0.000000000000000000e+00 4.800000000000000000e+02
-        0.000000000000000000e+00 4.694746736956946052e+02 2.700000000000000000e+02
-        0.000000000000000000e+00 0.000000000000000000e+00 1.000000000000000000e+00
-        '''
-    elif dataset=="zero123":
-        scale_T = 0.5
-    else:
-        raise Exception("invalid dataset type")
-
-    ## convert x y z to x -y -z
-    if dataset=="zero123":
-        flip_matrix = np.array([[1, 0, 0], [0, -1, 0], [0, 0, -1]])
-        for i in range(len(RT_list)):
-            RT_list[i] = np.dot(flip_matrix, RT_list[i])
-
-
-    temp = []
-    first_frame_RT = copy.deepcopy(RT_list[0])
-    # first_frame_R_inv = np.linalg.inv(first_frame_RT[:,:3]) 
-    first_frame_R_inv = first_frame_RT[:,:3].T
-    first_frame_T =  first_frame_RT[:,-1]
-    for RT in RT_list:
-        RT[:,:3] = np.dot(RT[:,:3], first_frame_R_inv)
-        RT[:,-1] =  RT[:,-1] - np.dot(RT[:,:3], first_frame_T)
-        RT[:,-1] = RT[:,-1] * scale_T
-        temp.append(RT)
-    RT_list = temp
-
-    if dataset=="realestate":
-        RT_list = [RT.reshape(-1) for RT in RT_list]
-
-
-    return RT_list
-
 def sigma_matrix2(sig_x, sig_y, theta):
     """Calculate the rotated sigma matrix (two dimensional matrix).
     Args:

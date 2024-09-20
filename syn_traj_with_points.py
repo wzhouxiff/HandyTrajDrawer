@@ -1,16 +1,13 @@
-import argparse
-import glob
 import os
-import sys
+import argparse
 import imageio
 
 import cv2
 import numpy as np
 import torch
-import torchvision
-from flow_viz import flow_to_image
+from utils.flow_viz import flow_to_image
 
-from utils import bivariate_Gaussian
+from utils.utils import bivariate_Gaussian
 
 def get_trajectory(points_set, bg_img=None):
     # white background
@@ -76,7 +73,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-n', '--name', required=True, type=str, default='traj', help='Name of the output folder')
 parser.add_argument('--height', required=False, type=int, default=256, help='Height of the image')
 parser.add_argument('--width', required=False, type=int, default=256, help='Width of the image')
-parser.add_argument('-i', '--input', required=True, nargs='+', type=str, help='Path of input folder')
+parser.add_argument('-i', '--inputs', required=True, nargs='+', type=str, help='Path of input folder')
 parser.add_argument('--reverse', required=True, nargs='+', type=int, help='Reverse the order of the points, 0 or 1')
 parser.add_argument('-o', '--output', required=True, type=str, default='./outputs', help='Path of output image')
 parser.add_argument('--video_len', required=False, type=int, default=16, help='Length of the video')
@@ -93,26 +90,34 @@ width = args.width
 video_len = args.video_len
 
 name = args.name
-output_path = args.output
+output_path = os.path.join(args.output, name)
+os.makedirs(output_path, exist_ok=True)
 
 kernel_size = args.kernel_size
 sigma_x = args.sigma_x
 sigma_y = args.sigma_y
 blur_kernel = bivariate_Gaussian(kernel_size, sigma_x, sigma_y, 0, grid=None, isotropic=True)
 
-traj_files = args.input
+traj_files = args.inputs
 reverse = args.reverse
 print(traj_files)
 print(reverse)
 
 points_sets = []
+output_name = ''
 for i in range(len(traj_files)):
-    points_sets.append(read_points(traj_files[i], reverse[i]))
+    traj_files[i] = traj_files[i][:-1] if traj_files[i][-1] == '/' else traj_files[i]
+    points_sets.append(read_points(f'{traj_files[i]}/trajectory.txt', reverse[i]))
+    output_name += traj_files[i].split('/')[-1]
+    if reverse[i]:
+        output_name += '_rev'
+    output_name += '_'
+output_name = output_name[:-1]
 
-opt_video = get_flow(points_sets, f'{output_path}/{name}')
+opt_video = get_flow(points_sets, f'{output_path}/{output_name}')
 
 vis_video = []
 for i in range(len(opt_video)):
     vis_video.append(get_trajectory(points_sets, opt_video[i]))
 
-imageio.mimsave(f'{output_path}/{name}.gif', vis_video, fps=10, loop=0)
+imageio.mimsave(f'{output_path}/{output_name}.gif', vis_video, fps=10, loop=0)
