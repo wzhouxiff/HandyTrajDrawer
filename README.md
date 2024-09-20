@@ -31,10 +31,10 @@ This repo aims to customize moving trajectories in a video.
         ```
         python syn_traj_with_points.py \
         --inputs outputs/traj_0/ \
+        --reverse 0 \
         --height 256 --width 256 --video_len 16 \
         --output ./outputs \
-        --name traj_0 \
-        --reverse 0
+        --name traj_0 
         ```
 
     - A single trajectory (reverse):
@@ -42,10 +42,10 @@ This repo aims to customize moving trajectories in a video.
         ```
         python syn_traj_with_points.py \
         --inputs outputs/traj_0/ \
+        --reverse 1 \
         --height 256 --width 256 --video_len 16 \
         --output ./outputs \
-        --name traj_0 \
-        --reverse 0
+        --name traj_0 
         ```
 
     - Multiple trajectories:
