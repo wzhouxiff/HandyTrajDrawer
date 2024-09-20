@@ -38,21 +38,31 @@ name = args.name
 input_path = args.input
 output_path = args.output
 
-# Create output folder
-out_root = f'{output_path}/{name}'
-os.makedirs(out_root, exist_ok=True)
-
-output_file = f'{out_root}/{name}.txt'
-fout = open(output_file, 'w')
-
-output_png = f'{out_root}/{name}.png'
 
 # Create a background image
 if input_path is not None and os.path.exists(input_path):
    img = cv2.imread(input_path)
    img = cv2.resize(img, (width, height))
+   
+   img_name = os.path.basename(input_path).split('.')[0]
+   out_root = f'{output_path}/{img_name}_{name}'
+   os.makedirs(out_root, exist_ok=True)
+   
+   output_file = f'{out_root}/trajectory.txt'
+   fout = open(output_file, 'w')
+   
+   output_png = f'{out_root}/image.png'
+   
 else:
    img = np.zeros((height, width, 3), np.uint8)
+   # Create output folder
+   out_root = f'{output_path}/{name}'
+   os.makedirs(out_root, exist_ok=True)
+
+   output_file = f'{out_root}/trajectory.txt'
+   fout = open(output_file, 'w')
+
+   output_png = f'{out_root}/image.png'
    
 # Create a window and bind the function to window
 cv2.namedWindow("Curve Window")
